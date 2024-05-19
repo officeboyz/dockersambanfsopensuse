@@ -1,20 +1,21 @@
-version: '3'
+version: '3.4'
 
 services:
   samba:
-    build: .
-    devices:
-      - /dev/fuse
-    restart: unless-stopped
-    hostname: Samba
+    image: elswork/samba
     environment:
-      USER1: 'bob;secret'
-      USERID: 1000
-      GROUPID: 1000
-      SHARE1: 'WebRoot;/shares/www;yes;no;no;bob'
-    volumes:
-      - $HOME:/mnt
-    cap_add:
-      - SYS_ADMIN
+      TZ: 'Europe/Madrid'
+    networks:
+      - default
     ports:
-      - 445:445
+      - "139:139"
+      - "445:445"
+    restart: unless-stopped
+    volumes:
+      - /home/pirate/docker/makefile:/share/folder
+      #- /path/to/be/shared:/share/folder
+    command: '-u "1000:1000:pirate:pirate:put-any-password-here" -s "SmbShare:/share/folder:rw:pirate"'
+    # command: '-u "uid:guid:username:groupname:put-any-password-here" -s "SmbShare:/share/folder:rw:username"'
+
+# networks:
+  # default:

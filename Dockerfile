@@ -1,51 +1,28 @@
-FROM phusion/baseimage:focal-1.0.0
+ARG BASEIMAGE=alpine:latest
+FROM ${BASEIMAGE}
 
-ARG DEBIAN_FRONTEND=noninteractive
-ENV PATH="/container/scripts:${PATH}"
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+LABEL mantainer="Eloy Lopez <elswork@gmail.com>" \
+    org.opencontainers.image.title="Samba" \
+    org.opencontainers.image.description="Multiarch Samba Docker container" \
+    org.opencontainers.image.vendor=Deft.Work \
+    org.opencontainers.image.url=https://deft.work/Samba \
+    org.opencontainers.image.source=https://github.com/DeftWork/samba \
+    org.opencontainers.image.version=$VERSION \ 
+    org.opencontainers.image.created=$BUILD_DATE \
+    org.opencontainers.image.revision=$VCS_REF \
+    org.opencontainers.image.licenses=MIT
 
-WORKDIR /setup
+RUN apk update && apk upgrade && apk add --no-cache bash samba-common-tools samba tzdata && rm -rf /var/cache/apk/*
 
-# Update system
-RUN apt-get update && \
-    apt-get upgrade -y -o Dpkg::Options::="--force-confold" && \
-    apt-get clean && rm -rf /var/lib/apt/lists* /tmp/* /var/tmp/*
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod u+x /entrypoint.sh
 
-# Install samba
-RUN apt-get update && \
-    apt-get install -y samba && \
-    touch /var/lib/samba/registry.tdb /var/lib/samba/account_policy.tdb && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+EXPOSE 137/udp 138/udp 139 445
 
-RUN apt-get update && \
-    apt-get install -y build-essential git libfuse2 libfuse-dev cmake libattr1-dev fuse && \
-    git clone https://github.com/oliver-la/fuse_xattrs.git && \
-    cd fuse_xattrs &&   \
-    mkdir build && cd build && \
-    cmake .. && \
-    make && \
-    make install && \
-    apt-get remove -y build-essential git cmake && \
-    apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+HEALTHCHECK --interval=60s --timeout=15s CMD smbclient -L \\localhost -U % -m SMB3
 
-COPY config/samba/smb.conf /etc/samba/smb.conf
-
-RUN addgroup --system smb && \
-    adduser --system --no-create-home --home /tmp --disabled-login --ingroup smb --gecos "" smbuser
-
-RUN mkdir -p /etc/service/fuse
-COPY service/fuse/run /etc/service/fuse/run
-RUN chmod +x /etc/service/fuse/run
-
-COPY scripts/samba.sh /usr/bin/entrypoint.sh
-
-RUN mkdir -p /shares && \
-    chown smbuser:smb /shares && \
-    chmod 777 /shares
-
-EXPOSE 445
-
-HEALTHCHECK --interval=60s --timeout=15s \
-            CMD smbclient -L \\localhost -U % -m SMB3
-
-CMD ["/sbin/my_init", "--", "/usr/bin/entrypoint.sh"]
-
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["-h"]
