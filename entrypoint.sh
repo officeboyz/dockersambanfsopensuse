@@ -28,6 +28,15 @@ map to guest = bad user
 socket options = TCP_NODELAY SO_RCVBUF=8192 SO_SNDBUF=8192
 local master = no
 dns proxy = no
+[share]
+comment = Shared folder
+path = /media/external/share
+public = yes
+writable = yes
+guest ok = yes
+create mask = 0775
+browseable = yes
+
 EOT
 fi
   while getopts ":u:s:h" opt; do

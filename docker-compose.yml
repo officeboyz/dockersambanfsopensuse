@@ -3,8 +3,7 @@ version: '3.4'
 services:
   samba:
     build: .  
-    image: elswork/samba
-    restart: always
+    image: opzteam/samba
     environment:
       TZ: 'Asia/Jakarta'
     networks:
@@ -14,8 +13,8 @@ services:
       - "445:445"
     restart: unless-stopped
     volumes:
-      - /tmp/:/tmp/
-      - /home/uzer/docker/makefile/:/home/uzer/
+      - .//tmp/:/tmp/
+      #- /home/uzer/docker/makefile/:/home/uzer/
       #- /path/to/be/shared:/share/folder
     command: '-u "1000:1000:uzer:uzer:password@123" -s "SmbShare:/share/folder:rw:pirate"'
     # command: '-u "uid:guid:username:groupname:put-any-password-here" -s "SmbShare:/share/folder:rw:username"'
