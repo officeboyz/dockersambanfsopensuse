@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
     volumes:
       - /tmp/:/tmp/
-      -/home/uzer/docker/makefile/:/home/uzer/
+      - /home/uzer/docker/makefile/:/home/uzer/
       #- /path/to/be/shared:/share/folder
     command: '-u "1000:1000:uzer:uzer:password@123" -s "SmbShare:/share/folder:rw:pirate"'
     # command: '-u "uid:guid:username:groupname:put-any-password-here" -s "SmbShare:/share/folder:rw:username"'
